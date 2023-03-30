@@ -3,6 +3,7 @@ User can search for a particular product or service by typing the name of the pr
 The search results will be displayed on the screen. 
 The user can select the product or service and can view the details of the product or service.
 
+    @SMOKE
     Scenario Outline: User searches for a product or service using Google search
       Given the user is on the Google search page
       When the user types "<homepage_title>" in the search box

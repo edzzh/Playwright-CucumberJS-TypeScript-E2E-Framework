@@ -13,6 +13,7 @@ import {
 import { Browser } from "@playwright/test"
 import WebBrowser from "../config/Browser";
 import UIActions from './UIActions';
+import Logger from '../config/Logger';
 import * as dotenv from "dotenv";
 
 const envConfig = dotenv.config().parsed;
@@ -22,24 +23,18 @@ setDefaultTimeout(Number.parseInt(envConfig.TEST_TIMEOUT, 10) * 60000);
 let browser: Browser;
 
 BeforeAll(async function () {
-  console.log('-'.repeat(120));
-  console.log(`[${new Date()}] Launching WEB Browser - ${envConfig.BROWSER ?? "chromium"}`);
-  console.log('-'.repeat(120));
+  Logger.info(`Launching WEB Browser - ${envConfig.BROWSER ?? "chromium"}`)
 
   browser = await WebBrowser.launch();
 });
 
 AfterAll(async function () {
-  console.log('\n' + '-'.repeat(120));
-  console.log(`[${new Date()}] Closing WEB Browser`);
-  console.log('-'.repeat(120));
-
+  Logger.info(`Closing WEB Browser`);
   await browser.close();
 });
 
 Before(async function ({ pickle, gherkinDocument }: ITestCaseHookParameter) {
-  const { line } = formatterHelpers.PickleParser.getPickleLocation({ gherkinDocument, pickle });
-  console.log('TEST SCENARIO:', pickle.name);
+  Logger.testBegin(`TEST SCENARIO: ${pickle.name}`);
 
   this.context = await browser.newContext({
     viewport: null,
@@ -52,19 +47,23 @@ Before(async function ({ pickle, gherkinDocument }: ITestCaseHookParameter) {
   this.web = new UIActions(this.page);
 });
 
-After(async function () {
+After(async function ({ result, pickle, gherkinDocument}: ITestCaseHookParameter) {
   await this.page?.close();
   await this.context?.close();
-  console.log('\n' + '-'.repeat(120));
-  console.log(`[${new Date()}] Closing Page & Context Instances of WEB`);
-  console.log('-'.repeat(120));
+
+  Logger.testEnd(`${pickle.name}:`, (result.status) ? result.status + ' ✅' : result.status + ' ❌');
 });
 
 BeforeStep(async function ({ pickleStep }: ITestStepHookParameter) {
-  console.log(`- ${pickleStep.text.toUpperCase()}`);
+  Logger.info(pickleStep.text.toUpperCase());
 });
 
 AfterStep(async function ({ gherkinDocument, pickleStep, result }: ITestStepHookParameter) {
-  const emoji = (result.status === 'PASSED') ? '✅' : '❌';
-  console.log(`> ${result.status.toUpperCase()} ${emoji} `);
+  const step_status = (result.status === 'PASSED') ? '✅' : '❌';
+  
+  if (result.status !== 'FAILED') {
+    Logger.info(`${result.status.toUpperCase()} ${step_status}`);
+  } else {
+    Logger.error(`${result.status.toUpperCase()} ${step_status}`);
+  }
 });

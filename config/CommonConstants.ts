@@ -2,6 +2,7 @@ import * as dotenv from "dotenv";
 
 const envConfig = dotenv.config().parsed;
 
-export enum CommonConstants {
-  WAIT = parseInt(envConfig.WAIT_TIME, 10) * 60000,
+export default class CommonConstants {
+  static readonly WAIT = parseInt(envConfig.TEST_TIMEOUT, 10) * 60000;
+  static readonly DOWNLOAD_PATH = './downloads';
 }

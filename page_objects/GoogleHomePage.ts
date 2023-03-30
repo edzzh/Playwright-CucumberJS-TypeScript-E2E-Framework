@@ -18,7 +18,7 @@ export default class GoogleHomePage {
   }
 
   public async sendKeysToSearchBox(searchText: string): Promise<void> {
-    await this.web.element(this.searchBox, 'Search Box').typeText(searchText, 0);
+    await this.web.inputField(this.searchBox, 'Search Box').type(searchText);
   }
 
   public async clickSearchButton(): Promise<void> {
